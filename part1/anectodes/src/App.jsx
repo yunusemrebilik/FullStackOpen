@@ -1,5 +1,15 @@
 import { useState } from 'react'
 
+const AnectodeDisplayer = ({ header, text, vote }) => {
+  return (
+    <>
+      <h1>{header}</h1>
+      <div>{text}</div>
+      <div>has {vote} votes</div>
+    </>
+  )
+}
+
 const App = () => {
   const anecdotes = [
     'If it hurts, do it more often.',
@@ -23,14 +33,26 @@ const App = () => {
     setVotes(updatedVotes)
   }
 
-  console.log(votes)
+  const calcIndexOfMost = () => {
+    let indexOfMost = 0
+    votes.forEach((vote, i) => {
+      if (vote > votes[indexOfMost]) {
+        indexOfMost = i
+      }
+    }) 
+    return indexOfMost
+  }
+
+  const indexOfMost = calcIndexOfMost()
 
   return (
     <>
-      <div>{anecdotes[selected]}</div>
-      <div>has {votes[selected]} votes</div>
+      <AnectodeDisplayer header='Anectode of the day' text={anecdotes[selected]} vote={votes[selected]} />
+
       <button onClick={handleVote}>vote</button>
       <button onClick={() => setSelected(generateRandomNumber(anecdotes.length))}>next anectode</button>
+
+      <AnectodeDisplayer header='Anectode with most votes' text={anecdotes[indexOfMost]} vote={votes[indexOfMost]} />
     </>
   )
 }
