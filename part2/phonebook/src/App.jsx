@@ -8,17 +8,26 @@ const App = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (persons.find(p => p.name === newName)) {
+      alert(`${newName} is already added to phonebook`)
+      return
+    }
+
     const newPerson = { name: newName }
     setPersons(persons.concat(newPerson))
     setNewName('')
   }
   
+  function handleChange(e) {
+    setNewName(e.target.value)
+  }
+
   return (
     <div>
       <h2>Phonebook</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          name: <input value={newName} onChange={(e) => setNewName(e.target.value)} />
+          name: <input value={newName} onChange={handleChange} />
         </div>
         <div>
           <button type="submit">add</button>
