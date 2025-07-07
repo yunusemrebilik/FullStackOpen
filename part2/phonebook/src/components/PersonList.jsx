@@ -1,9 +1,26 @@
-const PersonCard = ({ name, number }) => <div>{name} {number}</div>
+import personService from "../services/personService"
 
-const PersonList = ({ people }) => {
+const PersonCard = ({ id, name, number, deletePerson }) => {
+  const handleDeleteRequest = () => {
+    if(confirm(`Delete ${name}`)) {
+      personService.deleteById(id).then(data => {
+        console.log(data)
+        deletePerson(id)
+      })
+    }
+  }
+  
+  return (
+    <div>
+      {name} {number} <button onClick={handleDeleteRequest}>delete</button>
+    </div>
+  )
+}
+
+const PersonList = ({ people, deletePerson }) => {
   return (
     <>
-      {people.map(p => <PersonCard key={p.id} name={p.name} number={p.number} />)}
+      {people.map(p => <PersonCard key={p.id} id={p.id} name={p.name} number={p.number} deletePerson={deletePerson} />)}
     </>
   )
 }

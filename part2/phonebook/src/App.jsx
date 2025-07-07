@@ -28,7 +28,7 @@ const App = () => {
         setNewName={setNewName} setNewNumber={setNewNumber} setPersons={setPersons} />
 
       <h3>Numbers</h3>
-      <PersonList people={personsToShow} />
+      <PersonList people={personsToShow} deletePerson={(id) => setPersons(persons.filter(p => p.id !== id))} />
     </div>
   )
 }
