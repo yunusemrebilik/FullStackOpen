@@ -3,12 +3,20 @@ import personService from "../services/personService"
 const PersonForm = ({ name, number, persons, setPersons, setNewName, setNewNumber}) => {
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (persons.find(p => p.name === name)) {
-      alert(`${name} is already added to phonebook`)
+    const newPerson = { name: name, number: number }
+
+    const existingPerson = persons.find(p => p.name === name)
+    if (existingPerson) {
+      if(confirm(`${name} is already added to phonebook, replace the old number with a new one?`)) {
+        personService.update(existingPerson.id, newPerson).then(responsePerson => {
+          setPersons(persons.map(p => p.id === responsePerson.id ? responsePerson : p))
+          setNewName('')
+          setNewNumber('')
+        })
+      }
       return
     }
-  
-    const newPerson = { name: name, number: number }
+
     personService.create(newPerson).then(newPerson => {
       setPersons(persons.concat(newPerson))
       setNewName('')

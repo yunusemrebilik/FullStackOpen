@@ -3,8 +3,7 @@ import personService from "../services/personService"
 const PersonCard = ({ id, name, number, deletePerson }) => {
   const handleDeleteRequest = () => {
     if(confirm(`Delete ${name}`)) {
-      personService.deleteById(id).then(data => {
-        console.log(data)
+      personService.deleteById(id).then(() => {
         deletePerson(id)
       })
     }
