@@ -1,4 +1,4 @@
-import axios from "axios"
+import personService from "../services/personService"
 
 const PersonForm = ({ name, number, persons, setPersons, setNewName, setNewNumber}) => {
   const handleSubmit = (e) => {
@@ -9,8 +9,8 @@ const PersonForm = ({ name, number, persons, setPersons, setNewName, setNewNumbe
     }
   
     const newPerson = { name: name, number: number }
-    axios.post('http://localhost:3001/persons/', newPerson).then(response => {
-      setPersons(persons.concat(response.data))
+    personService.create(newPerson).then(newPerson => {
+      setPersons(persons.concat(newPerson))
       setNewName('')
       setNewNumber('')
     })
