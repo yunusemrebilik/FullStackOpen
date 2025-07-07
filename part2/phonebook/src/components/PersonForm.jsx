@@ -1,3 +1,5 @@
+import axios from "axios"
+
 const PersonForm = ({ name, number, persons, setPersons, setNewName, setNewNumber}) => {
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -6,10 +8,12 @@ const PersonForm = ({ name, number, persons, setPersons, setNewName, setNewNumbe
       return
     }
   
-    const newPerson = { name: name, number: number, id: persons.length + 1 }
-    setPersons(persons.concat(newPerson))
-    setNewName('')
-    setNewNumber('')
+    const newPerson = { name: name, number: number }
+    axios.post('http://localhost:3001/persons/', newPerson).then(response => {
+      setPersons(persons.concat(response.data))
+      setNewName('')
+      setNewNumber('')
+    })
   }
 
   const handleNameChange = (e) => setNewName(e.target.value)
