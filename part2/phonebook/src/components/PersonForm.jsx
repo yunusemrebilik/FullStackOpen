@@ -1,9 +1,10 @@
 import personService from "../services/personService"
 
-const PersonForm = ({ name, number, persons, setPersons, setNewName, setNewNumber}) => {
+const PersonForm = ({ name, number, persons, setPersons, setNewName, setNewNumber, setNotification }) => {
   const handleSubmit = (e) => {
     e.preventDefault()
     const newPerson = { name: name, number: number }
+    console.log(setNotification)
 
     const existingPerson = persons.find(p => p.name === name)
     if (existingPerson) {
@@ -12,6 +13,8 @@ const PersonForm = ({ name, number, persons, setPersons, setNewName, setNewNumbe
           setPersons(persons.map(p => p.id === responsePerson.id ? responsePerson : p))
           setNewName('')
           setNewNumber('')
+          setNotification(`Updated ${name}`)
+          setTimeout(() => setNotification(null), 5000)
         })
       }
       return
@@ -21,6 +24,8 @@ const PersonForm = ({ name, number, persons, setPersons, setNewName, setNewNumbe
       setPersons(persons.concat(newPerson))
       setNewName('')
       setNewNumber('')
+      setNotification(`Added ${name}`)
+      setTimeout(() => setNotification(null), 5000)
     })
   }
 
