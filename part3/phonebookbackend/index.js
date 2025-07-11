@@ -1,6 +1,5 @@
 const express = require('express')
 const morgan = require('morgan')
-const cors = require('cors')
 const app = express()
 
 let persons = [
@@ -33,7 +32,6 @@ morgan.token('showPostData', (req, res) => {
   return ""
 })
 
-app.use(cors())
 app.use(morgan(function (tokens, req, res) {
   return [
     tokens.method(req, res),
