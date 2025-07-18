@@ -55,23 +55,14 @@ app.get('/info', (request, response) => {
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-  const id = request.params.id
-  persons = persons.filter(p => p.id !== id)
-
-  response.status(204).end()
+  Person.findByIdAndDelete(request.params.id)
+    .then(result => {
+      response.status(204).end()
+    })
+    .catch(error => {
+      response.status(500).end()
+    })
 })
-
-const generateId = () => {
-  let id = 0
-  let existingPerson = {}
-  
-  do {
-    id = String(Math.floor(Math.random() * 100_000_000))
-    existingPerson = persons.find(p => p.id === id)
-  } while(existingPerson)
-
-  return id
-}
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
