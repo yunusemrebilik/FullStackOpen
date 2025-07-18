@@ -15,12 +15,7 @@ const errorHandler = (error, request, response, next) => {
   next(error)
 }
 
-morgan.token('showPostData', (req, res) => {
-  if (req.method === "POST") {
-    return JSON.stringify(req.body)
-  }
-  return ""
-})
+morgan.token('showPostData', (req, res) => req.method === "POST" ? JSON.stringify(req.body) : "")
 
 app.use(morgan(function (tokens, req, res) {
   return [
