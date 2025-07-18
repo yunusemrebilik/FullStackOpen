@@ -14,7 +14,7 @@ const get = (city) => {
     })
     .then(response => {
       const weatherData = {
-        temp: `${(response.data.main.temp - 273.15).toFixed(1)} Celsius`,
+        temp: `${(response.data.main.temp - 273.15).toFixed(1)} \u2103`,
         wind: `${response.data.wind.speed} m/s`,
         description: response.data.weather[0].description,
         iconUrl: `https://openweathermap.org/img/wn/${response.data.weather[0].icon}@4x.png`
