@@ -5,6 +5,16 @@ const Person = require('./models/person')
 
 const app = express()
 
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(404).send({ error: 'malformatted id' })
+  }
+
+  next(error)
+}
+
 morgan.token('showPostData', (req, res) => {
   if (req.method === "POST") {
     return JSON.stringify(req.body)
@@ -31,16 +41,12 @@ app.get('/api/persons', (request, response) => {
   })
 })
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
   Person.findById(request.params.id)
     .then(person => {
       response.json(person)
     })
-    .catch(error => {
-      response.status(404).json({
-        error: 'person not found'
-      })
-    })
+    .catch(error => next(error))
 })
 
 app.get('/info', (request, response) => {
@@ -54,14 +60,12 @@ app.get('/info', (request, response) => {
   })
 })
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
     .then(result => {
       response.status(204).end()
     })
-    .catch(error => {
-      response.status(500).end()
-    })
+    .catch(error => next(error))
 })
 
 app.post('/api/persons', (request, response) => {
@@ -82,6 +86,8 @@ app.post('/api/persons', (request, response) => {
     response.json(savedPerson)
   })
 })
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(3001, () => {
