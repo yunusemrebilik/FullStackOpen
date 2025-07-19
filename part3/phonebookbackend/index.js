@@ -17,7 +17,7 @@ const errorHandler = (error, request, response, next) => {
   next(error)
 }
 
-morgan.token('showPostData', (req, res) => req.method === "POST" ? JSON.stringify(req.body) : "")
+morgan.token('showPostData', (req, res) => req.method === 'POST' ? JSON.stringify(req.body) : '')
 
 app.use(morgan(function (tokens, req, res) {
   return [
@@ -59,7 +59,7 @@ app.get('/info', (request, response) => {
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
-    .then(result => {
+    .then(() => {
       response.status(204).end()
     })
     .catch(error => next(error))
