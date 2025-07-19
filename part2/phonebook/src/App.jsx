@@ -35,7 +35,8 @@ const App = () => {
       <h3>Add a new</h3>
       <PersonForm 
         name={newName} number={newNumber} persons={persons}
-        setNewName={setNewName} setNewNumber={setNewNumber} setPersons={setPersons} setNotification={setNotificaiton} />
+        setNewName={setNewName} setNewNumber={setNewNumber} setPersons={setPersons} 
+        setNotification={setNotificaiton} setError={setError} />
 
       <h3>Numbers</h3>
       <PersonList 

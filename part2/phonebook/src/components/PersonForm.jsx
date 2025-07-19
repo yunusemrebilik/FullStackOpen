@@ -1,6 +1,6 @@
 import personService from "../services/personService"
 
-const PersonForm = ({ name, number, persons, setPersons, setNewName, setNewNumber, setNotification }) => {
+const PersonForm = ({ name, number, persons, setPersons, setNewName, setNewNumber, setNotification, setError }) => {
   const handleSubmit = (e) => {
     e.preventDefault()
     const newPerson = { name: name, number: number }
@@ -20,13 +20,17 @@ const PersonForm = ({ name, number, persons, setPersons, setNewName, setNewNumbe
       return
     }
 
-    personService.create(newPerson).then(newPerson => {
-      setPersons(persons.concat(newPerson))
-      setNewName('')
-      setNewNumber('')
-      setNotification(`Added ${name}`)
-      setTimeout(() => setNotification(null), 5000)
-    })
+    personService.create(newPerson)
+      .then(newPerson => {
+        setPersons(persons.concat(newPerson))
+        setNewName('')
+        setNewNumber('')
+        setNotification(`Added ${name}`)
+        setTimeout(() => setNotification(null), 5000)
+      })
+      .catch(error => {
+        setError(error.response.data.error)
+      })
   }
 
   const handleNameChange = (e) => setNewName(e.target.value)
