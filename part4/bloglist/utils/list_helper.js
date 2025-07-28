@@ -20,6 +20,28 @@ const favoriteBlog = (blogs) => {
   return favorite
 }
 
+const mostBlogs = (blogs) => {
+  if (blogs.length === 0)
+    return null
+
+  const authors = new Map()
+
+  for (const blog of blogs) {
+    authors.set(
+      blog.author, 
+      authors.has(blog.author) ? authors.get(blog.author) + 1 : 1
+    );
+  }
+
+  let most = null
+  for (const [key, val] of authors) {
+    if (most === null || val > most.blogs) {
+      most = { author: key, blogs: val }
+    }
+  }
+  return most
+}
+
 const sampleBlogs = {
   blogsSingle: [
     {
@@ -125,5 +147,6 @@ module.exports = {
   dummy,
   totalLikes,
   favoriteBlog,
+  mostBlogs,
   sampleBlogs
 }
