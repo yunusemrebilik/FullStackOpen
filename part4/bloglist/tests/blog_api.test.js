@@ -21,12 +21,31 @@ test('all blogs are returned as json', async () => {
   assert.strictEqual(response.body.length, helper.initialBlogs.length)
 })
 
-test.only('the unique identifier is named id not _id', async () => {
+test('the unique identifier is named id not _id', async () => {
   const response = await api.get('/api/blogs')
   const randomIndex = Math.floor(Math.random() * helper.initialBlogs.length)
   const randomNote = response.body[randomIndex]
   assert(randomNote.hasOwnProperty('id'))
   assert(!randomNote.hasOwnProperty('_id'))
+})
+
+test.only('each post request creates exactly one blog, with the given data', async () => {
+  const blogsAtStart =  await helper.blogsInDB()
+  const blogToSave = helper.initialBlogs[0]
+  delete blogToSave._id
+  delete blogToSave.__v
+
+  const response = await api
+    .post('/api/blogs')
+    .send(blogToSave)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await helper.blogsInDB()  
+  assert.deepEqual(blogsAtEnd.length, blogsAtStart.length + 1)
+
+  delete response.body.id // ids are inherently unique
+  assert.deepStrictEqual(response.body, blogToSave)
 })
 
 after(async () => {
