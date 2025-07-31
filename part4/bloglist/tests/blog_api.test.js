@@ -46,7 +46,7 @@ test('each post request creates exactly one blog, with the given data', async ()
   assert.deepStrictEqual(response.body, blogToSave)
 })
 
-test.only('if the likes property is missing its value set to zero, by default', async () => {
+test('if the likes property is missing its value set to zero, by default', async () => {
   const blogToSave = helper.dummyNote
   const likes = blogToSave.likes
   delete blogToSave.likes
@@ -59,6 +59,21 @@ test.only('if the likes property is missing its value set to zero, by default', 
 
   assert.strictEqual(response.body.likes, 0)
   assert.notStrictEqual(response.body.likes, likes)
+})
+
+test.only('if the title or url is missing blog is not created', async () => {
+  const blogToSave = helper.dummyNote
+  const randomBool = !!Math.floor(Math.random() * 2)
+  if (randomBool) {
+    delete blogToSave.title
+  } else {
+    delete blogToSave.url
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(blogToSave)
+    .expect(400)
 })
 
 after(async () => {
