@@ -13,9 +13,20 @@ beforeEach(async () => {
   await Blog.insertMany(helper.initialBlogs)
 })
 
-test.only('all blogs are returned', async () => {
-  const response = await api.get('/api/blogs')
+test('all blogs are returned as json', async () => {
+  const response = await api
+    .get('/api/blogs')
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
   assert.strictEqual(response.body.length, helper.initialBlogs.length)
+})
+
+test.only('the unique identifier is named id not _id', async () => {
+  const response = await api.get('/api/blogs')
+  const randomIndex = Math.floor(Math.random() * helper.initialBlogs.length)
+  const randomNote = response.body[randomIndex]
+  assert(randomNote.hasOwnProperty('id'))
+  assert(!randomNote.hasOwnProperty('_id'))
 })
 
 after(async () => {
