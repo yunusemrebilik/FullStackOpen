@@ -76,7 +76,7 @@ test('if the title or url is missing blog is not created', async () => {
     .expect(400)
 })
 
-test.only('deletion of a blog succeeds if id is valid', async () => {
+test('deletion of a blog succeeds if id is valid', async () => {
   const blogsAtStart = await helper.blogsInDB()
   const blogToDelete = blogsAtStart[0]
 
@@ -89,12 +89,42 @@ test.only('deletion of a blog succeeds if id is valid', async () => {
   assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
 })
 
-test.only('deletion of non existing blog changes nothing', async () => {
+test('deletion of non existing blog changes nothing', async () => {
   const blogsAtStart = await helper.blogsInDB()
   const nonExistingId = "a bunch of random word"
 
   await api.delete(`/api/blogs/${nonExistingId}`)
 
+  const blogsAtEnd = await helper.blogsInDB()
+
+  assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
+  assert.deepStrictEqual(blogsAtEnd, blogsAtStart)
+})
+
+test.only('updating a blog succeeds if id is valid', async () => {
+  const blogsAtStart = await helper.blogsInDB()
+
+  const blogToUpdate = {
+    id: blogsAtStart[0].id,
+    title: 'Updated',
+    author: 'Updated',
+    url: 'Updated',
+    likes: 999
+  }
+
+  const response = await api.put(`/api/blogs/${blogToUpdate.id}`).send(blogToUpdate).expect(200)
+  const blogsAtEnd = await helper.blogsInDB()
+
+  assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
+  assert.notDeepStrictEqual(blogsAtEnd, blogsAtStart)
+  assert.deepStrictEqual(response.body, blogToUpdate)
+})
+
+test.only('updating a blog does not exist does not change anything', async () => {
+  const blogsAtStart = await helper.blogsInDB()
+  const nonExistingId = 'random words here and there'
+
+  await api.put(`/api/blogs/${nonExistingId}`)
   const blogsAtEnd = await helper.blogsInDB()
 
   assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
