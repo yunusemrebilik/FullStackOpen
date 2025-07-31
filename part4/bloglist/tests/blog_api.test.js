@@ -31,7 +31,7 @@ test('the unique identifier is named id not _id', async () => {
 
 test.only('each post request creates exactly one blog, with the given data', async () => {
   const blogsAtStart =  await helper.blogsInDB()
-  const blogToSave = helper.initialBlogs[0]
+  const blogToSave = helper.dummyNote
   delete blogToSave._id
   delete blogToSave.__v
 
@@ -47,6 +47,8 @@ test.only('each post request creates exactly one blog, with the given data', asy
   delete response.body.id // ids are inherently unique
   assert.deepStrictEqual(response.body, blogToSave)
 })
+
+test.only()
 
 after(async () => {
   await mongoose.connection.close()
