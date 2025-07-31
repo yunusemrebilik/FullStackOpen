@@ -61,7 +61,7 @@ test('if the likes property is missing its value set to zero, by default', async
   assert.notStrictEqual(response.body.likes, likes)
 })
 
-test.only('if the title or url is missing blog is not created', async () => {
+test('if the title or url is missing blog is not created', async () => {
   const blogToSave = helper.dummyNote
   const randomBool = !!Math.floor(Math.random() * 2)
   if (randomBool) {
@@ -74,6 +74,31 @@ test.only('if the title or url is missing blog is not created', async () => {
     .post('/api/blogs')
     .send(blogToSave)
     .expect(400)
+})
+
+test.only('deletion of a blog succeeds if id is valid', async () => {
+  const blogsAtStart = await helper.blogsInDB()
+  const blogToDelete = blogsAtStart[0]
+
+  await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+  
+  const blogsAtEnd = await helper.blogsInDB()
+
+  assert(blogsAtStart.map(b => b.id).includes(blogToDelete.id))
+  assert(!blogsAtEnd.map(b => b.id).includes(blogToDelete.id))
+  assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
+})
+
+test.only('deletion of non existing blog changes nothing', async () => {
+  const blogsAtStart = await helper.blogsInDB()
+  const nonExistingId = "a bunch of random word"
+
+  await api.delete(`/api/blogs/${nonExistingId}`)
+
+  const blogsAtEnd = await helper.blogsInDB()
+
+  assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
+  assert.deepStrictEqual(blogsAtEnd, blogsAtStart)
 })
 
 after(async () => {
