@@ -29,11 +29,9 @@ test('the unique identifier is named id not _id', async () => {
   assert(!randomNote.hasOwnProperty('_id'))
 })
 
-test.only('each post request creates exactly one blog, with the given data', async () => {
+test('each post request creates exactly one blog, with the given data', async () => {
   const blogsAtStart =  await helper.blogsInDB()
   const blogToSave = helper.dummyNote
-  delete blogToSave._id
-  delete blogToSave.__v
 
   const response = await api
     .post('/api/blogs')
@@ -48,7 +46,20 @@ test.only('each post request creates exactly one blog, with the given data', asy
   assert.deepStrictEqual(response.body, blogToSave)
 })
 
-test.only()
+test.only('if the likes property is missing its value set to zero, by default', async () => {
+  const blogToSave = helper.dummyNote
+  const likes = blogToSave.likes
+  delete blogToSave.likes
+
+  const response = await api
+    .post('/api/blogs')
+    .send(blogToSave)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  assert.strictEqual(response.body.likes, 0)
+  assert.notStrictEqual(response.body.likes, likes)
+})
 
 after(async () => {
   await mongoose.connection.close()
