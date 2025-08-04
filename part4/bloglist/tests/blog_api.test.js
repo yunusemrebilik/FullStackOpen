@@ -101,7 +101,7 @@ test('deletion of non existing blog changes nothing', async () => {
   assert.deepStrictEqual(blogsAtEnd, blogsAtStart)
 })
 
-test.only('updating a blog succeeds if id is valid', async () => {
+test('updating a blog succeeds if id is valid', async () => {
   const blogsAtStart = await helper.blogsInDB()
 
   const blogToUpdate = {
@@ -120,7 +120,7 @@ test.only('updating a blog succeeds if id is valid', async () => {
   assert.deepStrictEqual(response.body, blogToUpdate)
 })
 
-test.only('updating a blog does not exist does not change anything', async () => {
+test('updating a blog does not exist does not change anything', async () => {
   const blogsAtStart = await helper.blogsInDB()
   const nonExistingId = 'random words here and there'
 
