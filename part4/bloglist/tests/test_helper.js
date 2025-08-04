@@ -1,4 +1,5 @@
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const listHelper = require('../utils/list_helper')
 
 const initialBlogs = listHelper.sampleBlogs.blogsMixed
@@ -15,8 +16,14 @@ const blogsInDB = async () => {
   return blogs.map(b => b.toJSON())
 }
 
+const usersInDb = async () => {
+  const users = await User.find({})
+  return users.map(u => u.toJSON())
+}
+
 module.exports = {
   initialBlogs,
   dummyNote,
-  blogsInDB
+  blogsInDB,
+  usersInDb
 }
