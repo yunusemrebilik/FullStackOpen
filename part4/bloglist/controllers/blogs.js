@@ -10,10 +10,12 @@ blogRouter.get('/', async (request, response) => {
 blogRouter.post('/', async (request, response) => {
   try {
     const blog = new Blog(request.body)
-    const user = await User.findOne({})
+    const user = blog.user ? await User.findById(blog.user) : await User.findOne({})
 
-    blog.user = blog.user ?? user._id
     const savedBlog = await blog.save()
+    user.blogs = user.blogs.concat(savedBlog)
+    await user.save()
+
     response.status(201).json(savedBlog)
   } catch (exception) {
     response.status(400).json({ error: exception.message })
