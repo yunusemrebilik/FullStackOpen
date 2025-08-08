@@ -4,13 +4,38 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
+const User = require('../models/user')
+const bcrypt = require('bcrypt')
 const helper = require('./test_helper')
 
 const api = supertest(app)
 
 beforeEach(async () => {
+  await User.deleteMany({})
+  passwordHash = await bcrypt.hash(helper.dummyUser.password, 10)
+  const user = await User.insertOne({
+    username: helper.dummyUser.username,
+    name: helper.dummyUser.name,
+    passwordHash
+  })
+
+  helper.dummyUser.id = user.id
+  helper.dummyNote.user = user.id
+
+  for (let blog of helper.initialBlogs) {
+    blog.user = user.id
+  }
+
   await Blog.deleteMany({})
   await Blog.insertMany(helper.initialBlogs)
+
+  const response = await api
+    .post('/api/login')
+    .send({
+      username: helper.dummyUser.username,
+      password: helper.dummyUser.password
+    })
+  helper.dummyUser.token = response.body.token
 })
 
 test('all blogs are returned as json', async () => {
@@ -35,6 +60,7 @@ test('each post request creates exactly one blog, with the given data', async ()
 
   const response = await api
     .post('/api/blogs')
+    .set('authorization', `Bearer ${helper.dummyUser.token}`)
     .send(blogToSave)
     .expect(201)
     .expect('Content-Type', /application\/json/)
@@ -53,6 +79,7 @@ test('if the likes property is missing its value set to zero, by default', async
 
   const response = await api
     .post('/api/blogs')
+    .set('authorization', `Bearer ${helper.dummyUser.token}`)
     .send(blogToSave)
     .expect(201)
     .expect('Content-Type', /application\/json/)
@@ -72,6 +99,7 @@ test('if the title or url is missing blog is not created', async () => {
 
   await api
     .post('/api/blogs')
+    .set('authorization', `Bearer ${helper.dummyUser.token}`)
     .send(blogToSave)
     .expect(400)
 })
@@ -80,7 +108,10 @@ test('deletion of a blog succeeds if id is valid', async () => {
   const blogsAtStart = await helper.blogsInDB()
   const blogToDelete = blogsAtStart[0]
 
-  await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+  const response = await api
+    .delete(`/api/blogs/${blogToDelete.id}`)
+    .set('authorization', `Bearer ${helper.dummyUser.token}`)
+    .expect(204)
   
   const blogsAtEnd = await helper.blogsInDB()
 
@@ -113,6 +144,7 @@ test('updating a blog succeeds if id is valid', async () => {
   }
 
   const response = await api.put(`/api/blogs/${blogToUpdate.id}`).send(blogToUpdate).expect(200)
+  delete response.body.user // ignore populated data
   const blogsAtEnd = await helper.blogsInDB()
 
   assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
@@ -120,7 +152,7 @@ test('updating a blog succeeds if id is valid', async () => {
   assert.deepStrictEqual(response.body, blogToUpdate)
 })
 
-test('updating a blog does not exist does not change anything', async () => {
+test('updating a non existing blog does not change anything', async () => {
   const blogsAtStart = await helper.blogsInDB()
   const nonExistingId = 'random words here and there'
 
@@ -129,6 +161,21 @@ test('updating a blog does not exist does not change anything', async () => {
 
   assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
   assert.deepStrictEqual(blogsAtEnd, blogsAtStart)
+})
+
+test('blog is not created if the token is not provided', async () => {
+  const blogsAtStart =  await helper.blogsInDB()
+  const blogToSave = helper.dummyNote
+
+  const response = await api
+    .post('/api/blogs')
+    // .set('authorization', `Bearer ${helper.dummyUser.token}`)
+    .send(blogToSave)
+    .expect(401)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await helper.blogsInDB()  
+  assert.deepEqual(blogsAtEnd.length, blogsAtStart.length)
 })
 
 after(async () => {

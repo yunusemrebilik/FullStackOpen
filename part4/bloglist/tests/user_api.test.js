@@ -18,7 +18,7 @@ beforeEach(async () => {
   await user.save()
 })
 
-test.only('creation succeeds with a fresh username', async () => {
+test('creation succeeds with a fresh username', async () => {
   const usersAtStart = await helper.usersInDb()
 
   const newUser = {
@@ -40,7 +40,7 @@ test.only('creation succeeds with a fresh username', async () => {
   assert(usernames.includes(newUser.username))
 })
 
-test.only('creation fails with proper statuscode and message if username already taken', async () => {
+test('creation fails with proper statuscode and message if username already taken', async () => {
   const usersAtStart = await helper.usersInDb()
 
   const newUser = {
@@ -60,7 +60,7 @@ test.only('creation fails with proper statuscode and message if username already
   assert.strictEqual(usersAtEnd.length, usersAtStart.length)
 })
 
-test.only('creation fails with proper statuscode and message if username not long enough', async () => {
+test('creation fails with proper statuscode and message if username not long enough', async () => {
   const usersAtStart = await helper.usersInDb()
 
   const newUser = {
@@ -80,7 +80,7 @@ test.only('creation fails with proper statuscode and message if username not lon
   assert.strictEqual(usersAtEnd.length, usersAtStart.length)
 })
 
-test.only('creation fails with proper statuscode and message if password not long enough', async () => {
+test('creation fails with proper statuscode and message if password not long enough', async () => {
   const usersAtStart = await helper.usersInDb()
 
   const newUser = {
