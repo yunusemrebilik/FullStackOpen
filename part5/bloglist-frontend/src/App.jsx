@@ -3,12 +3,14 @@ import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import NewBlogForm from './components/NewBlogForm'
+import Notification from './components/Notification'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
+  const [notifications, setNotifications] = useState(new Map())
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -23,15 +25,38 @@ const App = () => {
     } 
   }, [])
 
+  const addNewNotification = (notification) => {
+    const id = `${Date.now().toString(36)} ${notification.content}`
+    setNotifications(prevNotifications => {
+      const newMap = new Map(prevNotifications)
+      newMap.set(id, notification)
+      return newMap
+    })
+
+    setTimeout(() => {
+      setNotifications(prevNotifications => {
+        const newMap = new Map(prevNotifications)
+        newMap.delete(id)
+        return newMap
+      })
+    }, 5000)
+  }
+
   const addNewBlog = async (blog) => {
     try {
       const savedBlog = await blogService.create(blog)
       if (savedBlog) {
         setBlogs(blogs.concat(savedBlog))
+        addNewNotification({
+          content: `A new blog "${savedBlog.title}" by ${savedBlog.author} has been added`,
+          type: 'success'
+        })
         return true
       }
     } catch (exception) {
-      console.error(exception.message)
+      addNewNotification({
+        content: `An error occured: ${exception.response.data.error}`
+      })
       return false
     }
   }
@@ -41,21 +66,31 @@ const App = () => {
 
     const credentials = { username, password }
     try {
-      const user = await loginService.login(credentials)
-      if (user) {
-        window.localStorage.setItem('blogsAppUser', JSON.stringify(user))
-        setUser(user)
+      const loggedUser = await loginService.login(credentials)
+      if (loggedUser) {
+        window.localStorage.setItem('blogsAppUser', JSON.stringify(loggedUser))
+        setUser(loggedUser)
         setUsername('')
         setPassword('')
+        addNewNotification({
+          content: `User "${loggedUser.name ?? loggedUser.username}" successfully logged in`,
+          type: 'success'
+        })
       }
     } catch (exception) {
-      console.error(exception.message)
+      addNewNotification({
+        content: `An error occured: ${exception.response.data.error}`
+      })
     }
   }
 
   const handleLogout = async () => {
     window.localStorage.removeItem('blogsAppUser')
     setUser(null)
+    addNewNotification({
+      content: `User successfully logged out`,
+      type: 'success'
+    })
   }
 
   const blogsJSX = () => (
@@ -92,8 +127,16 @@ const App = () => {
     </div>
   )
 
+  const notificationsArray = []
+  for (let n of notifications.values()) {
+    notificationsArray.push(n)
+  }
+
   return (
     <div>      
+      <div>
+        {notificationsArray.map((n, i) => <Notification key={i} content={n.content} type={n.type} />)}
+      </div>
       {
         !user
         ?
