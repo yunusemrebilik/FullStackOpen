@@ -21,12 +21,12 @@ const Blog = ({ blog, handleLike }) => {
   const expandedView = () => (
     <div>
       <div>
-        {blog.title}
+        {blog.title} by {blog.author}
         <button onClick={() => setExpanded(false)}>hide</button>
       </div>
       <div>{blog.url}</div>
       <div>{blog.likes} <button onClick={() => handleLike(blog.id)}>like</button></div>
-      <div>{blog.author}</div>
+      <div>{blog.user && (blog.user.name ?? blog.user.username)}</div>
     </div>
   )
   
