@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import NewBlogForm from './components/NewBlogForm'
 import Notification from './components/Notification'
+import Togglabe from './components/Togglable'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -11,6 +12,7 @@ const App = () => {
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
   const [notifications, setNotifications] = useState(new Map())
+  const newBlogRef = useRef()
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -51,6 +53,8 @@ const App = () => {
           content: `A new blog "${savedBlog.title}" by ${savedBlog.author} has been added`,
           type: 'success'
         })
+        console.error(newBlogRef)
+        newBlogRef.current.toggleVisibility()
         return true
       }
     } catch (exception) {
@@ -100,13 +104,13 @@ const App = () => {
         {user.name ?? user.username} logged in
         <button onClick={handleLogout}>log out</button>
       </p>
-      <div>
+      <Togglabe buttonLabel='new blog' ref={newBlogRef}>
         <h2>Create new</h2>
         <NewBlogForm addNewBlog={addNewBlog} />
+      </Togglabe>
+      <div>
+        {blogs.map(blog => <Blog key={blog.id} blog={blog} />)}
       </div>
-      {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} />
-      )}
     </div>
   )
 
