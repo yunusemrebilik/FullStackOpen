@@ -66,6 +66,25 @@ const App = () => {
     }
   }
 
+  const handleLike = async (id) => {
+    const blog = blogs.find(b => b.id === id)
+    if (blog) {
+      try {
+        blog.likes += 1
+        const updatedBlog = await blogService.update(id, blog)
+        setBlogs(blogs.map(b => b.id !== id ? b : updatedBlog))
+        addNewNotification({
+          content: `Blog "${updatedBlog.title}" has been liked (${updatedBlog.likes} likes)`,
+          type: 'success'
+        })
+      } catch (exception) {
+        addNewNotification({
+          content: `An error occured: ${exception.response.data.error}`
+        })
+      }
+    }
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault()
 
@@ -110,7 +129,7 @@ const App = () => {
         <NewBlogForm addNewBlog={addNewBlog} />
       </Togglabe>
       <div>
-        {blogs.map(blog => <Blog key={blog.id} blog={blog} />)}
+        {blogs.map(blog => <Blog key={blog.id} blog={blog} handleLike={handleLike} />)}
       </div>
     </div>
   )
