@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-const Blog = ({ blog, handleLike }) => {
+const Blog = ({ blog, handleLike, handleDelete }) => {
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -10,6 +10,17 @@ const Blog = ({ blog, handleLike }) => {
   }
 
   const [expanded, setExpanded] = useState(false)
+
+  let user = window.localStorage.getItem('blogsAppUser')
+  if (user) {
+    user = JSON.parse(user)
+  }
+
+  const handleRemoveClick = () => {
+    if (window.confirm(`Removing blog ${blog.title} by ${blog.author}`)) {
+      handleDelete(blog.id)
+    }
+  }
 
   const condensedView = () => (
     <div>
@@ -27,6 +38,15 @@ const Blog = ({ blog, handleLike }) => {
       <div>{blog.url}</div>
       <div>{blog.likes} <button onClick={() => handleLike(blog.id)}>like</button></div>
       <div>{blog.user && (blog.user.name ?? blog.user.username)}</div>
+      <div>
+        {
+          blog.user && user && blog.user.username === user.username
+          ?
+          <button onClick={handleRemoveClick}>remove</button>
+          : 
+          ''
+        }
+      </div>
     </div>
   )
   

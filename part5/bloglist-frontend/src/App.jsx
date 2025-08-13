@@ -13,18 +13,14 @@ const App = () => {
   const [user, setUser] = useState(null)
   const [notifications, setNotifications] = useState(new Map())
   const newBlogRef = useRef()
-
-  const sortBlogs = () => {
-    setBlogs(blogs => {
-      return blogs.sort((a, b) => -a.likes + b.likes)
-    })
-  }
+  
+  const sortBlogsPredicate = (a, b) => b.likes - a.likes
   
   useEffect(() => {
     const fetchBlogs = async () => {
       const blogs = await blogService.getAll()
+      blogs.sort(sortBlogsPredicate)
       setBlogs(blogs)
-      sortBlogs()
     }
     fetchBlogs()
   }, [])
@@ -57,8 +53,7 @@ const App = () => {
     try {
       const savedBlog = await blogService.create(blog)
       if (savedBlog) {
-        setBlogs(blogs.concat(savedBlog))
-        sortBlogs()
+        setBlogs(blogs.concat(savedBlog).sort(sortBlogsPredicate))
         addNewNotification({
           content: `A new blog "${savedBlog.title}" by ${savedBlog.author} has been added`,
           type: 'success'
@@ -80,8 +75,8 @@ const App = () => {
       try {
         blog.likes += 1
         const updatedBlog = await blogService.update(id, blog)
-        setBlogs(blogs.map(b => b.id !== id ? b : updatedBlog))
-        sortBlogs()
+        updatedBlog.user = blog.user
+        setBlogs(blogs.map(b => b.id !== id ? b : updatedBlog).sort(sortBlogsPredicate))
         addNewNotification({
           content: `Blog "${updatedBlog.title}" has been liked (${updatedBlog.likes} likes)`,
           type: 'success'
@@ -91,6 +86,21 @@ const App = () => {
           content: `An error occured: ${exception.response.data.error}`
         })
       }
+    }
+  }
+
+  const deleteBlog = async (id) => {
+    try {
+      await blogService.remove(id)
+      addNewNotification({
+        content: `Blog "${blogs.find(b => b.id === id).title}" has been removed`,
+        type: 'success'
+      })
+      setBlogs(blogs.filter(b => b.id !== id))
+    } catch (exception) {
+      addNewNotification({
+        content: `An error occured: ${exception.response.data.error}`
+      })
     }
   }
 
@@ -138,7 +148,7 @@ const App = () => {
         <NewBlogForm addNewBlog={addNewBlog} />
       </Togglabe>
       <div>
-        {blogs.map(blog => <Blog key={blog.id} blog={blog} handleLike={handleLike} />)}
+        {blogs.map(blog => <Blog key={blog.id} blog={blog} handleLike={handleLike} handleDelete={deleteBlog} />)}
       </div>
     </div>
   )

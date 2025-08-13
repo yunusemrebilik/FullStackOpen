@@ -21,4 +21,13 @@ const update = async (id, blog) => {
   return response.data
 }
 
-export default { getAll, create, update }
+const remove = async (id) => {
+  const token = `Bearer ${JSON.parse(window.localStorage.getItem('blogsAppUser')).token}`
+  const config = {
+    headers: { 'Authorization': token }
+  }
+
+  await axios.delete(`${baseUrl}/${id}`, config)
+}
+
+export default { getAll, create, update, remove }
