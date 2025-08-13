@@ -14,10 +14,17 @@ const App = () => {
   const [notifications, setNotifications] = useState(new Map())
   const newBlogRef = useRef()
 
+  const sortBlogs = () => {
+    setBlogs(blogs => {
+      return blogs.sort((a, b) => -a.likes + b.likes)
+    })
+  }
+  
   useEffect(() => {
     const fetchBlogs = async () => {
       const blogs = await blogService.getAll()
       setBlogs(blogs)
+      sortBlogs()
     }
     fetchBlogs()
   }, [])
@@ -51,6 +58,7 @@ const App = () => {
       const savedBlog = await blogService.create(blog)
       if (savedBlog) {
         setBlogs(blogs.concat(savedBlog))
+        sortBlogs()
         addNewNotification({
           content: `A new blog "${savedBlog.title}" by ${savedBlog.author} has been added`,
           type: 'success'
@@ -73,6 +81,7 @@ const App = () => {
         blog.likes += 1
         const updatedBlog = await blogService.update(id, blog)
         setBlogs(blogs.map(b => b.id !== id ? b : updatedBlog))
+        sortBlogs()
         addNewNotification({
           content: `Blog "${updatedBlog.title}" has been liked (${updatedBlog.likes} likes)`,
           type: 'success'
