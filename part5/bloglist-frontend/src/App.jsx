@@ -15,9 +15,11 @@ const App = () => {
   const newBlogRef = useRef()
 
   useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs( blogs )
-    )  
+    const fetchBlogs = async () => {
+      const blogs = await blogService.getAll()
+      setBlogs(blogs)
+    }
+    fetchBlogs()
   }, [])
 
   useEffect(() => {
@@ -53,7 +55,6 @@ const App = () => {
           content: `A new blog "${savedBlog.title}" by ${savedBlog.author} has been added`,
           type: 'success'
         })
-        console.error(newBlogRef)
         newBlogRef.current.toggleVisibility()
         return true
       }
