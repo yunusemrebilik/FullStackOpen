@@ -52,7 +52,7 @@ const Blog = ({ blog, handleLike, handleDelete }) => {
   )
   
   return (
-    <div style={blogStyle}>
+    <div style={blogStyle} className="blog">
       {
         expanded
         ?
@@ -66,8 +66,8 @@ const Blog = ({ blog, handleLike, handleDelete }) => {
 
 Blog.propTypes = {
   blog: PropTypes.object.isRequired,
-  handleLike: PropTypes.func.isRequired,
-  handleDelete: PropTypes.func.isRequired
+  // handleLike: PropTypes.func.isRequired,
+  // handleDelete: PropTypes.func.isRequired
 }
 
 export default Blog
