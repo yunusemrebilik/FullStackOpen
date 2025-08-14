@@ -23,15 +23,15 @@ const Blog = ({ blog, handleLike, handleDelete }) => {
     }
   }
 
-  const condensedView = () => (
-    <div>
+  const shrunkView = () => (
+    <div data-testid="shrunkView">
         {blog.title} by {blog.author}
         <button onClick={() => setExpanded(true)}>view</button>
     </div>
   )
 
   const expandedView = () => (
-    <div>
+    <div data-testid="expandedView">
       <div>
         {blog.title} by {blog.author}
         <button onClick={() => setExpanded(false)}>hide</button>
@@ -58,7 +58,7 @@ const Blog = ({ blog, handleLike, handleDelete }) => {
         ?
         expandedView()
         :
-        condensedView()
+        shrunkView()
       }
     </div>
   )
