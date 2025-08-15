@@ -26,6 +26,12 @@ const App = () => {
   }, [])
 
   useEffect(() => {
+    if (user) {
+      blogService.setToken(user.token)
+    }
+  }, [user])
+
+  useEffect(() => {
     const userJSON = window.localStorage.getItem('blogsAppUser')
     if (userJSON) {
       setUser(JSON.parse(userJSON))
