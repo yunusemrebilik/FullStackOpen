@@ -12,9 +12,12 @@ const api = supertest(app)
 beforeEach(async () => {
   await User.deleteMany({})
 
-  const passwordHash = await bcrypt.hash('branch', 10)
-  const user = new User({ username: 'root', passwordHash })
-
+  const passwordHash = await bcrypt.hash(helper.dummyUser.password, 10)
+  const user = new User({
+    username: helper.dummyUser.username,
+    name: helper.dummyUser.name,
+    passwordHash
+  })
   await user.save()
 })
 
@@ -22,9 +25,9 @@ test('creation succeeds with a fresh username', async () => {
   const usersAtStart = await helper.usersInDb()
 
   const newUser = {
-    username: 'uncle',
-    name: 'john edward',
-    password: 'mystrongpassword'
+    username: 'different',
+    name: helper.dummyUser.name,
+    password: helper.dummyUser.password
   }
 
   await api
@@ -44,12 +47,12 @@ test('creation fails with proper statuscode and message if username already take
   const usersAtStart = await helper.usersInDb()
 
   const newUser = {
-    username: 'root',
-    name: 'john lock',
-    password: 'testimonials'
+    username: helper.dummyUser.username,
+    name: 'different',
+    password: 'different'
   }
 
-  const result = await api
+  await api
     .post('/api/users')
     .send(newUser)
     .expect(400)
@@ -69,7 +72,7 @@ test('creation fails with proper statuscode and message if username not long eno
     password: 'testimonials'
   }
 
-  const result = await api
+  await api
     .post('/api/users')
     .send(newUser)
     .expect(400)
@@ -85,11 +88,11 @@ test('creation fails with proper statuscode and message if password not long eno
 
   const newUser = {
     username: 'satisfied',
-    name: 'john lock',
+    name: 'just a name',
     password: 'ab'
   }
 
-  const result = await api
+  await api
     .post('/api/users')
     .send(newUser)
     .expect(400)

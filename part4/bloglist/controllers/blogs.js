@@ -15,20 +15,14 @@ blogRouter.post('/', async (request, response) => {
       return response.status(400).json({ error: 'userId missing or not valid' })
     }
     const blog = new Blog(request.body)
-    blog.user = user
+    blog.user = user._id
 
     const savedBlog = await blog.save()
-    user.blogs = user.blogs.concat(savedBlog)
+    user.blogs = user.blogs.concat(savedBlog._id)
     await user.save()
 
-    // why I'm not using just response.status(201).json(savedBlog) 
-    // because it didn't work with supertest
-    // (though I don't know the actual cause, it's just my observation)
-    // and I spent hours to figure it out
-    // then come up with a "solution" like this
-    const blogToTest = await Blog.findById(savedBlog._id)
-    const transformedBlog = blogToTest.toJSON()
-    response.status(201).send(transformedBlog)
+    const blogToTest = await Blog.findById(savedBlog._id).populate('user', { username: 1, name: 1 })
+    response.status(201).send(blogToTest)
 
   } catch (exception) {
     response.status(400).json({ error: exception.message })

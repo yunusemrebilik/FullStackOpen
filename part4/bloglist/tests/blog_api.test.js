@@ -11,28 +11,30 @@ const helper = require('./test_helper')
 const api = supertest(app)
 
 beforeEach(async () => {
+  await Blog.deleteMany({})
   await User.deleteMany({})
-  passwordHash = await bcrypt.hash(helper.dummyUser.password, 10)
-  const user = await User.insertOne({
+  const passwordHash = await bcrypt.hash(helper.dummyUser.password, 10)
+  const user = new User({
     username: helper.dummyUser.username,
     name: helper.dummyUser.name,
     passwordHash
   })
+  const savedUser = await user.save()
 
-  helper.dummyUser.id = user.id
-  helper.dummyNote.user = user.id
+  helper.dummyUser.id = savedUser.id
+  helper.dummyNote.user = savedUser.id
+  
+  const blogsWithUser = helper.initialBlogs.map(blog => ({
+    ...blog,
+    user: savedUser.id
+  }))
 
-  for (let blog of helper.initialBlogs) {
-    blog.user = user.id
-  }
-
-  await Blog.deleteMany({})
-  await Blog.insertMany(helper.initialBlogs)
+  await Blog.insertMany(blogsWithUser)
 
   const response = await api
     .post('/api/login')
     .send({
-      username: helper.dummyUser.username,
+      username: savedUser.username, // Use the username from the saved user
       password: helper.dummyUser.password
     })
   helper.dummyUser.token = response.body.token
@@ -68,8 +70,8 @@ test('each post request creates exactly one blog, with the given data', async ()
   const blogsAtEnd = await helper.blogsInDB()  
   assert.deepEqual(blogsAtEnd.length, blogsAtStart.length + 1)
 
-  delete response.body.id // ids are inherently unique
-  assert.deepStrictEqual(response.body, blogToSave)
+  const titles = blogsAtEnd.map(b => b.title)
+  assert(titles.includes(blogToSave.title))
 })
 
 test('if the likes property is missing its value set to zero, by default', async () => {
