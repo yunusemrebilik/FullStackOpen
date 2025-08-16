@@ -23,9 +23,9 @@ const createBlog = async (page, content) => {
   await page.getByText(`${content.title} by ${content.author}`).waitFor({ state: 'visible' })
 }
 
-const getBlogDiv = (page, blog) => {
+const getBlogDiv = (page, blog, expanded = true) => {
   const titleDiv = page.getByText(`${blog.title} by ${blog.author}`)
-  const blogDiv = titleDiv.locator('..').locator('..')
+  const blogDiv = expanded ? titleDiv.locator('..').locator('..') : titleDiv.locator('..')
   return blogDiv
 }
 
@@ -34,9 +34,14 @@ const expandDetails = async (blogDiv) => {
   await blogDiv.getByRole('button', { name: 'hide' }).waitFor({ state: 'visible' })
 }
 
-const likeBlog = async (page, locator, blog) => {
+const shrinkDetails = async (blogDiv) => {
+  await blogDiv.getByRole('button', { name: 'hide' }).click()
+  await blogDiv.getByRole('button', { name: 'view' }).waitFor({ status: 'visible' })
+}
+
+const likeBlog = async (page, locator, blog, old=0) => {
   await locator.getByRole('button', { name: 'like' }).click()
-  await page.getByText(`"${blog.title}" has been liked`).waitFor({ status: 'visible' })
+  await page.getByText(`"${blog.title}" has been liked (${old + 1} likes)`).waitFor({ status: 'visible' })
 }
 
 const deleteBlog = async (page, locator, blog) => {
@@ -57,6 +62,7 @@ export {
   createBlog,
   getBlogDiv,
   expandDetails,
+  shrinkDetails,
   likeBlog,
   deleteBlog,
   logout

@@ -1,5 +1,5 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
-const { loginWith, createBlog, getBlogDiv, likeBlog, deleteBlog, logout, createUser, expandDetails } = require('./helper')
+const { loginWith, createBlog, getBlogDiv, likeBlog, deleteBlog, logout, createUser, expandDetails, shrinkDetails } = require('./helper')
 const ROOT = {
   name: 'default user',
   username: 'root',
@@ -11,6 +11,29 @@ const sampleBlog = {
   author: 'author-a',
   url: 'url-a'
 }
+
+const sampleSeveralBlogs = [
+  {
+    title: 'blog-0',
+    author: 'author-0',
+    url: 'url-0'
+  },
+  {
+    title: 'blog-1',
+    author: 'author-1',
+    url: 'url-1'
+  },
+  {
+    title: 'blog-2',
+    author: 'author-2',
+    url: 'url-2'
+  },
+  {
+    title: 'blog-3',
+    author: 'author-3',
+    url: 'url-3'
+  }
+]
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
@@ -109,6 +132,59 @@ describe('Blog app', () => {
           await expandDetails(newBlogDiv)
           await expect(newBlogDiv.getByRole('button', { name: 'remove' })).not.toBeVisible()
         })
+      })
+    })
+
+    describe('and several blogs exists', () => {
+      beforeEach(async ({ page }) => {
+        for (let blog of sampleSeveralBlogs) {
+          await createBlog(page, blog)
+          blog.likes = 0
+        }
+      })
+
+      test('blogs are sorted by their like count', async ({ page }) => {
+        let blogDivs = []
+        for (let blog of sampleSeveralBlogs) {
+          blogDivs.push(getBlogDiv(page, blog, false))
+        }
+
+        // 2 likes for the blog index: 0
+        await expandDetails(blogDivs[0])
+        for (let i = 0; i < 2; i++) {
+          await likeBlog(page, blogDivs[0], sampleSeveralBlogs[0], i)
+          sampleSeveralBlogs[0].likes++
+        }
+        await shrinkDetails(blogDivs[0])
+
+        // 3 likes for the blog index: 1
+        await expandDetails(blogDivs[1])
+        for (let i = 0; i< 3; i++) {
+          await likeBlog(page, blogDivs[1], sampleSeveralBlogs[1], i)
+          sampleSeveralBlogs[1].likes++
+        }
+        await shrinkDetails(blogDivs[1])
+
+        // 4 likes for the blog index: 3
+        await expandDetails(blogDivs[3])
+        for (let i = 0; i < 4; i++) {
+          await likeBlog(page, blogDivs[3], sampleSeveralBlogs[3], i)
+          sampleSeveralBlogs[3].likes++
+        }
+        await shrinkDetails(blogDivs[3])
+        
+        // likes [2, 3, 0, 4]
+        // order must be (index) [3, 1, 0, 2]
+        const matchedDivs = []
+        for (let i = 0; i < sampleSeveralBlogs.length; i++) {
+          matchedDivs.push(page.getByText('by').nth(i).locator('..'))
+        }
+
+        // sort the array by like of each blog
+        const sortedBlogs = [...sampleSeveralBlogs].sort((a, b) => b.likes - a.likes)
+        for (let i = 0; i < sortedBlogs.length; i++) {
+          expect(matchedDivs[i]).toContainText(`${sortedBlogs[i].title} by ${sortedBlogs[i].author}`)
+        }
       })
     })
   })
