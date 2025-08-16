@@ -1,7 +1,17 @@
+const createUser = async (request, user) => {
+  await request.post('http://localhost:5173/api/users', {
+    data: {
+      name: user.name,
+      username: user.username,
+      password: user.password
+    }
+  })
+}
+
 const loginWith = async (page, username, password) => {
   await page.getByRole('textbox', { name: 'username' }).fill(username)
   await page.getByRole('textbox', { name: 'password' }).fill(password)
-  await page.getByRole('button', { name: 'login' }).click()  
+  await page.getByRole('button', { name: 'login' }).click()
 }
 
 const createBlog = async (page, content) => {
@@ -19,6 +29,11 @@ const getBlogDiv = (page, blog) => {
   return blogDiv
 }
 
+const expandDetails = async (blogDiv) => {
+  await blogDiv.getByRole('button', { name: 'view' }).click()
+  await blogDiv.getByRole('button', { name: 'hide' }).waitFor({ state: 'visible' })
+}
+
 const likeBlog = async (page, locator, blog) => {
   await locator.getByRole('button', { name: 'like' }).click()
   await page.getByText(`"${blog.title}" has been liked`).waitFor({ status: 'visible' })
@@ -28,8 +43,21 @@ const deleteBlog = async (page, locator, blog) => {
   page.on('dialog', dialog => dialog.accept())
 
   await locator.getByRole('button', { name: 'remove' }).click()
-  // await page.getByRole('button', { name: 'OK' }).click()
   await page.getByText(`"${blog.title}" has been removed`).waitFor({ status: 'visible' })
 }
 
-export { loginWith, createBlog, getBlogDiv, likeBlog, deleteBlog }
+const logout = async (page) => {
+  await page.getByRole('button', { name: 'log out' }).click()
+  await page.getByRole('button', { name: 'login' }).waitFor({ status: 'visible' })
+}
+
+export {
+  createUser,
+  loginWith,
+  createBlog,
+  getBlogDiv,
+  expandDetails,
+  likeBlog,
+  deleteBlog,
+  logout
+}

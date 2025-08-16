@@ -1,5 +1,5 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
-const { loginWith, createBlog, getBlogDiv, likeBlog, deleteBlog } = require('./helper')
+const { loginWith, createBlog, getBlogDiv, likeBlog, deleteBlog, logout, createUser, expandDetails } = require('./helper')
 const ROOT = {
   name: 'default user',
   username: 'root',
@@ -15,13 +15,7 @@ const sampleBlog = {
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
     await request.post('http://localhost:5173/api/testing/reset')
-    await request.post('http://localhost:5173/api/users', {
-      data: {
-        name: ROOT.name,
-        username: ROOT.username,
-        password: ROOT.password
-      }
-    })
+    await createUser(request, ROOT)
     
     await page.goto('http://localhost:5173')
   })
@@ -36,6 +30,7 @@ describe('Blog app', () => {
   describe('Login', () => {
     test('succeeds with correct credentials', async ({ page }) => {
       await loginWith(page, ROOT.username, ROOT.password)
+      await page.getByRole('button', { name: 'log out' }).waitFor({ status: 'visible' })
 
       await expect(page.getByText(`${ROOT.name} logged in`)).toBeVisible()
     })
@@ -51,7 +46,7 @@ describe('Blog app', () => {
   describe('When logged in', () => {
     beforeEach(async ({ page }) => {
       await loginWith(page, ROOT.username, ROOT.password)
-      await page.getByRole('button', { name: 'log out' }).waitFor({ state: 'visible' })
+      await page.getByRole('button', { name: 'log out' }).waitFor({ status: 'visible' })
     })
   
     test('a new blog can be created', async ({ page }) => {
@@ -67,16 +62,17 @@ describe('Blog app', () => {
       })
 
       test('details of a blog can be seen', async ({ page }) => {
-        await page.getByRole('button', { name: 'view' }).click()
-        await page.getByRole('button', { name: 'hide' }).waitFor({ state: 'visible' })
+        const blogDiv = getBlogDiv(page, sampleBlog)
+        await expandDetails(blogDiv)
+
         await expect(page.getByText(sampleBlog.url)).toBeVisible()
         await expect(page.getByText('0')).toBeVisible() // 0 for inital likes
       })
 
       describe('when its details expanded', () => {
         beforeEach(async ({ page }) => {
-          await page.getByRole('button', { name: 'view' }).click()
-          await page.getByRole('button', { name: 'hide' }).waitFor({ state: 'visible' })
+          const blogDiv = getBlogDiv(page, sampleBlog)
+          await expandDetails(blogDiv)
         })
 
         test('a blog can be liked', async ({ page }) => {
@@ -93,6 +89,25 @@ describe('Blog app', () => {
           await expect(page.getByText(`${sampleBlog.title} by ${sampleBlog.author}`)).toBeVisible()
           await deleteBlog(page, blogDiv, sampleBlog)
           await expect(page.getByText(`${sampleBlog.title} by ${sampleBlog.author}`)).not.toBeVisible()
+        })
+
+        test('remove button for deleting a blog is only avaliable to its owner', async ({ page, request }) => {
+          const blogDiv = getBlogDiv(page, sampleBlog)
+          await expect(blogDiv.getByRole('button', { name: 'remove' })).toBeVisible()
+
+          const differentUser = {
+            name: 'different',
+            username: 'different',
+            password: 'different'
+          }
+          await logout(page)
+          await createUser(request, differentUser)
+          await loginWith(page, differentUser.username, differentUser.password)
+          await page.getByRole('button', { name: 'log out' }).waitFor({ status: 'visible' })
+          
+          const newBlogDiv = getBlogDiv(page, sampleBlog)
+          await expandDetails(newBlogDiv)
+          await expect(newBlogDiv.getByRole('button', { name: 'remove' })).not.toBeVisible()
         })
       })
     })
