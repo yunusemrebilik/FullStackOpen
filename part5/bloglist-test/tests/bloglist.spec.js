@@ -1,9 +1,15 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
-const { loginWith, getAuthenticatedPage, createBlog } = require('./helper')
+const { loginWith, createBlog, likeBlog } = require('./helper')
 const ROOT = {
   name: 'default user',
   username: 'root',
   password: 'root'
+}
+
+const sampleBlog = {
+  title: 'blog-a',
+  author: 'author-a',
+  url: 'url-a'
 }
 
 describe('Blog app', () => {
@@ -49,15 +55,39 @@ describe('Blog app', () => {
     })
   
     test('a new blog can be created', async ({ page }) => {
-      const blog = {
-        title: 'blog-1',
-        author: 'author-1',
-        url: 'url-1'
-      }
-      await createBlog(page, blog)
+      await createBlog(page, sampleBlog)
 
-      expect(page.getByText(`A new blog "${blog.title}" by ${blog.author} has been added`)).toBeVisible()
-      expect(page.getByText(`${blog.title} by ${blog.author}`)).toBeVisible()
+      expect(page.getByText(`A new blog "${sampleBlog.title}" by ${sampleBlog.author} has been added`)).toBeVisible()
+      expect(page.getByText(`${sampleBlog.title} by ${sampleBlog.author}`)).toBeVisible()
+    })
+
+    describe('and a blog exists', () => {
+      beforeEach(async ({ page }) => {
+        await createBlog(page, sampleBlog)
+      })
+
+      test('details of a blog can be seen', async ({ page }) => {
+        await page.getByRole('button', { name: 'view' }).click()
+        await page.getByRole('button', { name: 'hide' }).waitFor({ state: 'visible' })
+        await expect(page.getByText(sampleBlog.url)).toBeVisible()
+        await expect(page.getByText('0')).toBeVisible() // 0 for inital likes
+      })
+
+      describe('when its details expanded', () => {
+        beforeEach(async ({ page }) => {
+          await page.getByRole('button', { name: 'view' }).click()
+          await page.getByRole('button', { name: 'hide' }).waitFor({ state: 'visible' })
+        })
+
+        test.only('a blog can be liked', async ({ page }) => {
+          const titleDiv = page.getByText(`${sampleBlog.title} by ${sampleBlog.author}`)
+          const blogDiv = titleDiv.locator('..').locator('..')
+
+          await expect(blogDiv).toContainText('0')
+          await likeBlog(page, blogDiv, sampleBlog)
+          await expect(blogDiv).toContainText('1')
+        })
+      })
     })
   })
 })

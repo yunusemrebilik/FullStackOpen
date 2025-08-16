@@ -13,4 +13,9 @@ const createBlog = async (page, content) => {
   await page.getByText(`${content.title} by ${content.author}`).waitFor({ state: 'visible' })
 }
 
-export { loginWith, createBlog }
+const likeBlog = async (page, locator, blog) => {
+  await locator.getByRole('button', { name: 'like' }).click()
+  await page.getByText(`"${blog.title}" has been liked`).waitFor({ status: 'visible' })
+}
+
+export { loginWith, createBlog, likeBlog }
