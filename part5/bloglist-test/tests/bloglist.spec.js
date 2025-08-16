@@ -1,5 +1,5 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
-const { loginWith, createBlog, likeBlog } = require('./helper')
+const { loginWith, createBlog, getBlogDiv, likeBlog, deleteBlog } = require('./helper')
 const ROOT = {
   name: 'default user',
   username: 'root',
@@ -79,13 +79,20 @@ describe('Blog app', () => {
           await page.getByRole('button', { name: 'hide' }).waitFor({ state: 'visible' })
         })
 
-        test.only('a blog can be liked', async ({ page }) => {
-          const titleDiv = page.getByText(`${sampleBlog.title} by ${sampleBlog.author}`)
-          const blogDiv = titleDiv.locator('..').locator('..')
+        test('a blog can be liked', async ({ page }) => {
+          const blogDiv = getBlogDiv(page, sampleBlog)
 
           await expect(blogDiv).toContainText('0')
           await likeBlog(page, blogDiv, sampleBlog)
           await expect(blogDiv).toContainText('1')
+        })
+
+        test('a blog can deleted by its owner', async ({ page }) => {
+          const blogDiv = getBlogDiv(page, sampleBlog)
+
+          await expect(page.getByText(`${sampleBlog.title} by ${sampleBlog.author}`)).toBeVisible()
+          await deleteBlog(page, blogDiv, sampleBlog)
+          await expect(page.getByText(`${sampleBlog.title} by ${sampleBlog.author}`)).not.toBeVisible()
         })
       })
     })
