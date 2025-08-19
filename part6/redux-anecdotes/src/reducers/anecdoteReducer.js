@@ -31,6 +31,13 @@ const reducer = (state = initialState, action) => {
         votes: a.votes + 1
       })
     }
+    case 'NEW_ANECTODE': {
+      return [...state, {
+        content: action.payload.content,
+        id: getId(),
+        votes: 0
+      }]
+    }
   }
   return state
 }
