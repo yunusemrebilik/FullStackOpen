@@ -26,9 +26,9 @@ export const vote = (id) => {
   }
 }
 
-export const newAnectode = (content) => {
+export const newAnecdote = (content) => {
     return {
-      type: 'NEW_ANECTODE',
+      type: 'NEW_ANECDOTE',
       payload: { 
         content,
         id: getId(),
@@ -49,7 +49,7 @@ const reducer = (state = initialState, action) => {
         votes: a.votes + 1
       })
     }
-    case 'NEW_ANECTODE': {
+    case 'NEW_ANECDOTE': {
       return [...state, action.payload]
     }
   }
