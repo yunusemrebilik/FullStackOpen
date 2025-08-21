@@ -7,15 +7,21 @@ const notificationSlice = createSlice({
     setNotification(state, action) {
       return action.payload
     },
-    removeNotification() {
+    clearNotification() {
       return ''
     }
   }
 })
 
-export const lastInverval = {
-  intervalId: 0
+const lastInverval = { intervalId: 0 }
+
+export const notify = (text, duration = 5) => {
+  return async dispatch => {
+    clearInterval(lastInverval.intervalId)
+    dispatch(setNotification(text))
+    lastInverval.intervalId = setTimeout(() => dispatch(clearNotification()), duration * 1000)
+  }
 }
 
-export const { setNotification, removeNotification } = notificationSlice.actions
+export const { setNotification, clearNotification } = notificationSlice.actions
 export default notificationSlice.reducer
