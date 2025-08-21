@@ -12,4 +12,14 @@ const createNew = async (content) => {
   return response.data
 }
 
-export default { getAll, createNew }
+// const update = async (id, anecdote) => {
+//   const response = await axios.put(`${baseUrl}/${id}`, anecdote)
+//   return response.data
+// }
+
+const patch = async (id, key, val) => {
+  const response = await axios.patch(`${baseUrl}/${id}`, { [key]: val })
+  return response.data
+}
+
+export default { getAll, createNew, patch }
